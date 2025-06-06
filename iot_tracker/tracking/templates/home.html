@@ -1,0 +1,934 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WildTrack</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;  
+        }
+        #map {
+            height: 400px; /* Ensure the map has a height */
+            width: 100%;   /* Set to full width */
+        }
+        .card {
+            margin: 15px;
+        }
+        footer {
+            {% comment %} position: fixed; {% endcomment %}
+            left: 0; 
+            bottom: 0; 
+            width: 100%; 
+            background-color: #343a40; 
+            color: white; 
+            text-align: center; 
+            padding: 10px 0; 
+        }
+        .about-section {
+            padding: 60px 0; /* Add padding for the about section */
+            background-color: #e9ecef; /* Light background for the about section */
+            margin-top: 57px;
+        }
+        .contact-section {
+            padding: 60px 0; /* Add padding for the contact section */
+            background-color: #b0b6b8; 
+        }
+        /* Add margin to top of the main content */
+        .main-content {
+            margin-top: 120px;
+        }
+        /* Custom CSS for Modal */
+        .modal-dialog {
+            display: flex;
+            align-items: center; /* Center vertically */
+            min-height: calc(100vh - 1rem); /* Prevent clipping on small screens */
+        }
+
+
+        .alerts-page {
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+          }
+        
+          /* Alerts Visualization Styles */
+          .alerts-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+          }
+        
+          .alerts-base-station {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: black;
+            border-radius: 50%;
+            animation: alerts-fade-dark-green 2s infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+          }
+        
+          .alerts-animal {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: purple;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 12px;
+          }
+        
+          .alerts-inner-circle {
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            border: 2px solid lightgreen;
+            border-radius: 50%;
+            background-color: rgba(239, 239, 239, 0.5);
+          }
+        
+          .alerts-outer-circle {
+            position: absolute;
+            width: 460px;
+            height: 460px;
+            border: 2px solid lightcoral;
+            border-radius: 50%;
+            background-color: rgba(255, 0, 0, 0.5);
+          }
+        
+          .alerts-alerted-animal {
+            background-color: red;
+          }
+        
+          @keyframes alerts-fade-dark-green {
+            0%, 100% {
+              background-color: black;
+            }
+            50% {
+              background-color: darkgreen;
+            }
+          }
+        
+
+
+{% comment %} 
+        .et_pb_gutters1 .et_pb_column_3_5, .et_pb_gutters1.et_pb_row .et_pb_column_3_5 {
+            width: 60%;
+            .et_pb_column_24 {
+                background-size: contain;
+                background-image: url(https://digitanimal.com/wp-content/uploads/2020/02/mapa-puntos5.gif);
+                background-color: #ffffff;
+                padding-top: 3%;
+                padding-bottom: 3%;
+                padding-left: 3%;
+            } {% endcomment %}
+    </style>
+     {% comment %} <script>
+        let previousCount = 0;  // Store the previous count of messages
+    
+        // Function to check for new message count
+        function checkForNewMessages() {
+            $.ajax({
+        url: '/ajax_count',  // Replace with the correct URL for the Django view
+        method: 'GET',
+        success: function(data) {
+            const currentCount = data.count;
+
+            // If the message count has increased, reload the page
+            if (currentCount > previousCount) {
+                location.reload();  // Refresh the page if the count has increased
+            }
+
+            // Update the previous count for the next check
+            previousCount = currentCount;
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching message count:', error);
+        }
+    });
+        }
+    
+        // Set an interval to check every 10 seconds
+        setInterval(checkForNewMessages,10000);  // 
+    </script>  {% endcomment %}
+    <script>
+        let previousCount = {{alert_count}};  // Store the previous count of messages
+        console.log("hii")
+
+// Function to check for new message count using jQuery AJAX
+function checkForNewMessages() {
+    $.ajax({
+        url: '/ajax_count',  // Replace with the correct URL for the Django view
+        method: 'GET',
+        success: function(data) {
+            const currentCount = data.count;
+
+            // If the message count has increased, reload the page
+          
+            if (currentCount < previousCount) {
+                // Send the "safe" message if the count has decreased
+                $.ajax({
+                    url: '/send_safe_message/',  // Django URL to send a "safe" message
+                    method: 'POST',
+                    data: {
+                        csrfmiddlewaretoken: getCSRFToken(),
+                        message: 'You are safe now, the animal is back in the region.'
+                    },
+                    success: function(response) {
+                        console.log('Safe message sent');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error sending safe message:', error);
+                    }
+                });
+            }
+            if (currentCount > previousCount) {
+                location.reload();// Refresh the page if the count has increased
+            }
+
+            // Update the previous count for the next check
+            previousCount = currentCount;
+            
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching message count:', error);
+        }
+    });
+}
+
+// Set an interval to check every 10 seconds
+setInterval(checkForNewMessages, 5000);  // 10000 milliseconds = 10 seconds
+
+    </script> 
+    
+{% comment %}  
+    <script>
+        let previousCount = 0;  // Variable to store previous alert count
+        
+        // Determine the WebSocket URL based on the protocol (ws or wss)
+        const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+        const alertSocket = new WebSocket(protocol + window.location.host + '/ws/alerts/');
+    
+        alertSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const currentCount = data.alert_count;
+    
+            console.log('Updated alert count:', currentCount);
+    
+            // Reload the page if new alerts are added
+            if (currentCount > previousCount) {
+                location.reload();
+            }
+    
+            // Update the previous count
+            previousCount = currentCount;
+        };
+    
+        alertSocket.onopen = function() {
+            console.log('WebSocket connection opened.');
+            alertSocket.send(JSON.stringify({
+                'message': 'Hello, server!'
+            }));
+        };
+        console.log('2');
+        alertSocket.onerror = function(e) {
+            console.error('WebSocket error:', e);
+        };
+        console.log('1');
+        alertSocket.onclose = function(e) {
+            console.error('WebSocket connection closed unexpectedly:', e);
+        };
+    </script>
+    {% endcomment %}
+    
+     {% comment %} <script>
+        // Open WebSocket connection
+        const alertSocket = new WebSocket('ws://' + window.location.host + '/ws/alerts/');
+    
+        // When a message is received from the server
+        alertSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log('Message from server:', data.message);
+        };
+    
+        // Send a test message to the server when the connection is open
+        alertSocket.onopen = function() {
+            console.log('WebSocket connection opened.');
+            alertSocket.send(JSON.stringify({
+                'message': 'Hello, server!'
+            }));
+        };
+    
+        // Handle WebSocket errors
+        alertSocket.onerror = function(e) {
+            console.error('WebSocket error:', e);
+        };
+    
+        // Handle WebSocket closure
+        alertSocket.onclose = function(e) {
+            console.error('WebSocket connection closed unexpectedly:', e);
+        };
+    </script> 
+     {% endcomment %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top" style="background-color:rgba(171, 171, 171, 0.85);">
+    {% comment %} #b3b3b3 {% endcomment %}
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <img src=".\static\images\sticker.webp" alt="Logo" class="d-inline-block align-top"  style="width: 60px;" />
+            
+            <span style="color: green; font-size: 2.25rem; letter-spacing: 1px;">Wild</span><span style="color: black; font-size: 2.25rem; letter-spacing: 1px;">Track</span>
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#about">About</a> <!-- Link to About section -->
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#contact">Contact Us</a> <!-- Link to Contact section -->
+                </li>
+                {% if user.is_authenticated %}
+                <div id="authStatus" data-authenticated="true" style="display: none;"></div>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-primary text-white" data-toggle="modal" data-target="#logoutModal">Logout</a> 
+                    
+                </li>
+                {% else %}
+                <div id="authStatus" data-authenticated="false" style="display: none;"></div>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-primary text-white" data-toggle="modal" data-target="#loginModal">Login</a> <!-- Trigger for modal -->
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+
+
+
+<!-- Main Content -->
+<div class="container main-content">
+    
+    {% if user.is_authenticated %}
+    <div style="font-size: 1rem; color: black; text-align: center;">
+        Hello, {{ user.first_name }}!
+    </div>
+   
+    {% endif %}
+    <h1 class="text-center">Welcome to <span style="color: green;">Wild</span><span style="color: blue;">Track</span></h1>
+
+    <div class="text-center my-4">
+        <h4 style="color: #37474f; font-weight: 600; margin-bottom: 10px;">Tracking Wildlife Movements</h4>
+        <p style="font-size: 1rem; color: #546e7a; margin-bottom: 5px;">in Real-Time with Cutting-Edge Technology.</p>
+    </div>
+    
+    <div class="row">
+        <!-- Card 1: Number of Animals -->
+        <!-- Card 1: Number of Animals -->
+<div class="col-md-4">
+    <div class="card text-white bg-success" data-toggle="modal" data-target="#animalDetailsModal">
+        <div class="card-header">Number of Animals</div>
+        <div class="card-body">
+            <h5 class="card-title">{{ unique_board_count }}</h5>
+            <p class="card-text">Animals currently being tracked.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Animal Details Modal -->
+<div class="modal fade" id="animalDetailsModal" tabindex="-1" role="dialog" aria-labelledby="animalDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="animalDetailsModalLabel">Animal Tracking Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <h5>Total Animals Being Tracked: <span id="animalCount">{{ unique_board_count }}</span></h5>
+                <p>Details about the animals being tracked will go here.</p>
+                <ul id="animalList">
+                            
+                </ul>
+                {% if user.is_authenticated %}
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addAnimalModal">Add Animal</button>
+                {% else %}
+                    <a class="nav-link btn btn-primary text-white" data-toggle="modal" data-target="#loginModal">Login</a>
+                {% endif %}
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Animal Modal -->
+<div class="modal fade" id="addAnimalModal" tabindex="-1" role="dialog" aria-labelledby="addAnimalModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAnimalModalLabel">Add New Animal</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="addAnimalForm">
+                    <div class="form-group">
+                        <label for="boardId">Board ID</label>
+                        <input type="text" class="form-control" id="boardId" name="board_id" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Animal</button>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Handle the Add Animal form submission via AJAX
+        $('#addAnimalForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            var boardId = $('#boardId').val();
+            
+            // Send AJAX request to the backend to add the animal
+            $.ajax({
+                url: "{% url 'add_animal' %}",  
+                method: 'POST',
+                data: {
+                    'board_id': boardId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if(response.status === 'success') {
+                            
+                        $('#animalCount').text(response.new_animal_count); 
+                        
+                        $('#addAnimalModal').modal('hide');
+                        location.reload(); 
+                    } else {
+                        alert('Error adding animal: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while adding the animal.');
+                }
+            });
+        });
+    });
+</script>
+
+        <!-- Card 2: Alert Notification -->
+        <!-- Card for Alert Notifications -->
+<div class="col-md-4">
+    <div class="card text-white bg-danger"   id="alertCard">
+        <div class="card-header">Alert Notifications</div>
+        <div class="card-body">
+            <h5 class="card-title">{{ alert_count }} Alerts</h5>
+            <p class="card-text">Animals are out of range!</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Check if the user is authenticated (Logged in or not)
+        {% if user.is_authenticated %}
+            $('#alertCard').on('click', function() {
+                // Redirect to the alert.html page after login
+                window.location.href = 'alerts';  // Modify this URL if necessary
+            });
+        {% else %}
+            $('#alertCard').on('click', function() {
+                // Show the modal if not logged in
+                $('#alertNotificationsModal').modal('show');
+            });
+        {% endif %}
+    });
+</script>
+
+ 
+
+<!-- Modal Structure alertNotificationsModal -->
+<!-- Dynamic Alert Modal -->
+<!-- Modal for alert notifications -->
+<div class="modal fade" id="alertNotificationsModal" tabindex="-1" role="dialog" aria-labelledby="alertNotificationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="alertModalLabel">Alert Notification</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {% if alerts %}
+                    {% for alert in alerts %}
+                        <div>
+                            
+                            <p><strong>Animal:</strong> {{ alert.animal_name}} </p>
+                            <p><strong>Time:</strong> {{ alert.datetime }}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No alerts available.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- The alert notification trigger -->
+
+
+
+<!-- Card 3: Location of Animals -->
+<div class="col-md-4">
+    <div class="card text-white bg-info" data-toggle="modal" data-target="#locationofanimalsModal">
+        <div class="card-header">Location of Animals</div>
+        <div class="card-body">
+            <h5 class="card-title">{{ unique_board_count }} Locations</h5>
+            <p class="card-text">Current tracking locations of animals.</p>
+        </div>
+    </div>
+</div>
+</div>
+<!-- Modal Structure locationofanimalsModal -->
+<div class="modal fade" id="locationofanimalsModal" tabindex="-1" role="dialog" aria-labelledby="locationofanimalsModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="locationofanimalsModal">Location of Animals</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                
+                    <h5>Current Tracking Locations of Animals</h5>
+                    <!-- Map container -->
+                    <div class="alerts-page">
+                        <!-- Alerts Visualization Section -->
+                        <div class="alerts-container">
+                          <div class="alerts-outer-circle"></div>
+                          <div class="alerts-inner-circle"></div>
+                          <div class="alerts-base-station">
+                            <strong>Base</strong>
+                          </div>
+                        </div>
+                    </div>
+                {% comment %} {% else %}
+                    <p>Please login first to view the location of animals.</p>
+                    <a class="nav-link btn btn-primary text-white" data-toggle="modal" data-target="#loginModal">Login</a>
+                {% endif %} {% endcomment %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- script for loction model-->
+<div id="animal-data" style="display:none;">{{ animal_list|safe }}</div>
+<script src="{% static 'js/animals.js' %}"></script>
+        
+    <div class="row">
+        <!-- Card 4: Number of Website Visitors -->
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-header">Website Visitors</div>
+                <div class="card-body">
+                    <h5 class="card-title">200</h5>
+                    <p class="card-text">Total visitors this month.</p>
+                </div>
+            </div>
+        </div>
+        <!-- Card 5: Recent Activities -->
+        <div class="col-md-4">
+            <div class="card text-white bg-warning">
+                <div class="card-header">Recent Activities</div>
+                <div class="card-body">
+                    <h5 class="card-title">5 Activities</h5>
+                    <p class="card-text">Latest updates from the field.</p>
+                </div>
+            </div>
+        </div>
+        <!-- Card 6: Animal Species Count -->
+        <div class="col-md-4">
+            <div class="card text-white bg-secondary" data-toggle="modal" data-target="#phoneNumberModal">
+                <div class="card-header">Add Phone Number</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ phone_number_count }} Phone Numbers in Total</h5>
+                    <p class="card-text" style="font-size: 0.6rem;"><strong style="font-size: 0.7rem;">Stay informed and safe</strong>—add your phone number for instant alerts!</p>
+                    
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal for Adding Phone Number -->
+        <div class="modal fade" id="phoneNumberModal" tabindex="-1" role="dialog" aria-labelledby="phoneNumberModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="phoneNumberModalLabel">Add Phone Number</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form method="POST" action="{% url 'add_phone_number' %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <p style="font-size: 0.9rem;"><strong>Register your phone number</strong> to receive  <strong>forest alert messages</strong> and stay protected from wildlife.</p>
+                                <label for="phoneNumberInput">Phone Number</label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="phoneNumberInput"
+                                    name="phone_number"
+                                    placeholder="Enter phone number"
+                                    required
+                                />
+                                
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% comment %} <div>
+    {% if user.is_authenticated %}
+    <div class="et_pb_column et_pb_column_3_5 et_pb_column_24  et_pb_css_mix_blend_mode_passthrough et-last-child">
+				
+				
+				
+				
+        <div class="et_pb_module et_pb_code et_pb_code_1">
+        
+        <h1>hello</h1>
+        
+        
+        
+    </div>
+    </div>
+    {% endif %}
+</div> {% endcomment %}
+<!-- About Section -->
+<div id="about" class="about-section text-center">
+    <div class="container">
+        <h2>About WildTrack</h2>
+        <p>WildTrack is an innovative animal tracking solution designed to monitor wildlife movements in real-time. Our system leverages advanced technology to ensure the safety and tracking of animals, providing valuable insights for conservation efforts.</p>
+        <p>Our mission is to enhance wildlife conservation and research through effective monitoring systems, ensuring that every animal's journey is documented and understood.</p>
+    </div>
+</div>
+
+<!-- Contact Section -->
+<div id="contact" class="contact-section text-center">
+    <div class="container">
+        <h2>Contact Us</h2>
+        <p>If you have any questions, suggestions, or feedback, feel free to reach out to us!</p>
+
+        <form class="text-center" id="contactForm" method="POST" action="{% url 'contact' %}">
+            {% csrf_token %}
+            <div class="row justify-content-center">
+                <div class="form-group col-md-3" style="margin-bottom: 15px;">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required>
+                </div>
+                
+                <div class="form-group col-md-3" style="margin-bottom: 15px;">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group col-md-3" style="margin-bottom: 15px;">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter your phone number" required>
+                </div>
+            </div>
+        
+            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        </form>
+        
+
+        <!-- Modal for Thank You Message -->
+        <div class="modal fade" id="thankYouModal" tabindex="-1" role="dialog" aria-labelledby="thankYouModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="thankYouModalLabel">Thank You</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Thank you for reaching out to us. We will catch you soon!</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to Show Thank You Modal on Form Submission -->
+{% comment %} <script>
+    document.getElementById('contactForm').addEventListener('submit', function(event) {
+        event.preventDefault();  // Prevent the form from submitting in the traditional way
+        $('#thankYouModal').modal('show');  // Show the Thank You modal
+    }); 
+</script> {% endcomment %}
+
+
+<!-- Logout Confirmation Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" >
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to logout?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <a href="{% url 'logout' %}" class="btn btn-primary">Yes, Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Login/Signup Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#login" role="tab">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#signup" role="tab">Sign Up</a>
+                    </li>
+                </ul>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Add image here -->
+                
+                <div class="tab-content">
+                    
+                    <!-- Login Form -->
+                    <div class="tab-pane fade show active" id="login" role="tabpanel">
+                        <div class="text-center mb-3">
+                            <img src=".\static\images\photo2.jpg" alt="Animal Icon" style="width: 350px; height: 220px;" />
+                        </div>
+                        <form method="POST" action="{% url 'login' %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <p>If you don't have an account please Sign Up</p>
+                                <label for="modalEmail">Email</label>
+                                <input type="email" class="form-control" id="modalEmail" name="modalEmail" placeholder="Enter email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="modalPassword">Password</label>
+                                <input type="password" class="form-control" id="modalPassword" name="modalPassword" placeholder="Password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Login</button>
+                            
+                        </form>
+                        
+                    </div>
+                    <!-- Sign Up Form -->
+                    <div class="tab-pane fade" id="signup" role="tabpanel">
+                        <div class="text-center mb-3">
+                            <img src=".\static\images\photo1.jpg" alt="Animal Icon" style="width: 350px; height: 220px;" />
+                        </div>
+                        <form method="POST" action="{% url 'signup' %}">
+                            {% csrf_token %}
+                            <p>Already have an account? Please Login</p>
+                            <div class="form-group">
+                                <label for="signupName">Name</label>
+                                <input type="text" class="form-control" id="signupName" name="name" placeholder="Enter your name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="signupEmail">Email</label>
+                                <input type="email" class="form-control" id="signupEmail" name="email" placeholder="Enter email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="signupPassword">Password</label>
+                                <input type="password" class="form-control" id="signupPassword" name="password" placeholder="Create a password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Sign Up</button>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div>{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+{% comment %} <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> {% endcomment %}
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+
+<script>
+    $(document).ready(function() {
+        {% if messages %}
+            $('#errorModal').modal('show');  // Show the modal if there are messages
+        {% endif %}
+    });
+</script>
+
+</body>
+</html>
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p>© 2024 WildTrack. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Bootstrap JS, jQuery -->
+{% comment %} <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> {% endcomment %}
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% comment %} <script>
+    var isAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
+</script> {% endcomment %}
+
+<script>
+    $(document).ready(function() {
+        $('.card').on('click', function() {
+            var isAuthenticated = $('#authStatus').data('authenticated'); 
+    
+            if (isAuthenticated) {
+                // Update modal content if needed
+                $('#animalCount').text({{ unique_board_count }}); // Change this if you have a dynamic count
+                $('#animalList').html(`
+                    <ul id="animalList">
+                      
+    {% for animal in unique_animal_list %}
+    
+        <li>{{ animal.name }}: {{ animal.count }}</li>
+    {% endfor %}
+</ul>
+                `);
+            } else {
+                $('#animalList').html(`
+                    Login first..!
+                `);
+            }
+        });
+    });
+    
+</script>
+<script type="text/javascript">
+    // Show the alert modal when alerts are available
+    {% if alerts %}
+        $('#alertModal').modal('show');
+    {% endif %}
+</script>
+
+
+
+
+{% comment %} <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script> {% endcomment %}
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Tracking Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            margin: 20px;
+        }
+        #tracking-data {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .alert {
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mt-5">Animal Tracking Dashboard</h1>
+        <div id="tracking-data">
+            <!-- Real-time tracking data will be displayed here -->
+            <div class="card">
+                <div class="card-header">
+                    Animal Location
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title" id="animal-name">Animal Name: Unknown</h5>
+                    <p class="card-text" id="animal-location">Current Location: Not Available</p>
+                    <p class="card-text" id="animal-status">Status: In Range</p>
+                </div>
+            </div>
+            <div class="alert alert-danger" id="alert-range" role="alert">
+                Alert: The animal has crossed the defined range!
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Example JavaScript for updating the dashboard
+        // In a real application, you would replace this with real-time data
+        function updateDashboard() {
+            const animalName = "Lion";
+            const animalLocation = "Latitude: 12.9716, Longitude: 77.5946";
+            const animalStatus = "In Range"; // Change this to "Out of Range" to show alert
+            
+            document.getElementById('animal-name').innerText = `Animal Name: ${animalName}`;
+            document.getElementById('animal-location').innerText = `Current Location: ${animalLocation}`;
+            document.getElementById('animal-status').innerText = `Status: ${animalStatus}`;
+            
+            if (animalStatus === "Out of Range") {
+                document.getElementById('alert-range').style.display = 'block'; // Show alert
+            } else {
+                document.getElementById('alert-range').style.display = 'none'; // Hide alert
+            }
+        }
+
+        // Simulate updating the dashboard
+        setTimeout(updateDashboard, 2000); // Update after 2 seconds
+    </script>
+</body>
+</html>

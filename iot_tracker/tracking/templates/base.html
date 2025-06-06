@@ -1,0 +1,197 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WildTrack</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        #map {
+            height: 400px; /* Ensure the map has a height */
+            width: 100%;   /* Set to full width */
+        }
+        .card {
+            margin: 15px;
+        }
+        footer {
+            {% comment %} position: fixed; {% endcomment %}
+            left: 0; 
+            bottom: 0; 
+            width: 100%; 
+            background-color: #343a40; 
+            color: white; 
+            text-align: center; 
+            padding: 10px 0; 
+        }
+        .about-section {
+            padding: 60px 0;
+            background-color: #e9ecef;
+            margin-top: 57px;
+        }
+        .contact-section {
+            padding: 60px 0;
+            background-color: #b0b6b8;
+        }
+        /* Add margin to top of the main content */
+        .main-content {
+            margin-top: 120px;
+        }
+        /* Custom CSS for Modal */
+        .modal-dialog {
+            display: flex;
+            align-items: center; /* Center vertically */
+            min-height: calc(100vh - 1rem); /* Prevent clipping on small screens */
+        }
+    </style>
+     {% comment %} <script>
+        let previousCount = 0;  // Store the previous count of messages
+    
+        // Function to check for new message count
+        function checkForNewMessages() {
+            fetch('/ajax_count')  // Update with the correct URL for the Django view
+                .then(response => response.json())
+                .then(data => {
+                    const currentCount = data.count;
+    
+                    // If the message count has increased, reload the page
+                    if (currentCount > previousCount) {
+                        location.reload();  // Refresh the page if the count has increased
+                    }
+    
+                    // Update the previous count for the next check
+                    previousCount = currentCount;
+                })
+                .catch(error => console.error('Error fetching message count:', error));
+        }
+    
+        // Set an interval to check every 10 seconds
+        setInterval(checkForNewMessages,1000);  // 
+    </script>  {% endcomment %}
+
+
+   <script>
+        let previousCount = {{alert_count}};  // Store the previous count of messages
+        console.log("hii")
+
+// Function to check for new message count using jQuery AJAX
+function checkForNewMessages() {
+    $.ajax({
+        url: '/ajax_count',  // Replace with the correct URL for the Django view
+        method: 'GET',
+        success: function(data) {
+            const currentCount = data.count;
+
+            // If the message count has increased, reload the page
+            console.log(currentCount)
+            console.log(previousCount)
+            if (currentCount != previousCount ) {
+                location.reload();// Refresh the page if the count has increased
+            }
+
+            // Update the previous count for the next check
+            previousCount = currentCount;
+            console.log(currentCount)
+            console.log(previousCount)
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching message count:', error);
+        }
+    });
+}
+
+// Set an interval to check every 10 seconds
+setInterval(checkForNewMessages, 5000);  // 10000 milliseconds = 10 seconds
+
+    </script> 
+    
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top" style="background-color:rgba(171, 171, 171, 0.85);">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <img src="{% static 'images/sticker.webp' %}" alt="Logo" class="d-inline-block align-top" style="width: 60px;" />
+            <span style="color: green; font-size: 2.25rem; letter-spacing: 1px;">Wild</span><span style="color: black; font-size: 2.25rem; letter-spacing: 1px;">Track</span>
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a> <!-- Link to Home Page -->
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/#about">About</a> <!-- Link to About section -->
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/#contact">Contact Us</a> <!-- Link to Contact section -->
+                </li>
+                {% if user.is_authenticated %}
+                    <div id="authStatus" data-authenticated="true" style="display: none;"></div>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary text-white" data-toggle="modal" data-target="#logoutModal">Logout</a>
+                    </li>
+                {% else %}
+                    <div id="authStatus" data-authenticated="false" style="display: none;"></div>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary text-white" data-toggle="modal" data-target="#loginModal">Login</a> <!-- Trigger for modal -->
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" >
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to logout?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <a href="{% url 'logout' %}" class="btn btn-primary">Yes, Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Main content section -->
+<main class="container mt-5 pt-5">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p>© 2024 WildTrack. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Include JS files -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

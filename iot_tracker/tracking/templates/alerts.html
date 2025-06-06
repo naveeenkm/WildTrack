@@ -1,0 +1,520 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+<style>
+  .alerts-page {
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Alerts Visualization Styles */
+  .alerts-container {
+    position: relative;
+    width: 100%;
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    
+  }
+
+  .alerts-base-station {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background-color: black;
+    border-radius: 50%;
+    animation: alerts-fade-dark-green 2s infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+  }
+
+  .alerts-animal {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: purple;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 12px;
+     border-radius: 50%; /* Makes each marker circular */
+    transform: translate(-50%, -50%);
+  }
+
+  .alerts-inner-circle {
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    border: 2px solid lightgreen;
+    border-radius: 50%;
+    background-color: rgba(239, 239, 239, 0.5);
+  }
+
+  .alerts-outer-circle {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border: 2px solid lightcoral;
+    border-radius: 50%;
+    background-color: rgba(255, 0, 0, 0.5);
+  }
+
+  .alerts-alerted-animal {
+    background-color: red;
+  }
+
+  @keyframes alerts-fade-dark-green {
+    0%, 100% {
+      background-color: black;
+    }
+    50% {
+      background-color: darkgreen;
+    }
+  }
+
+  /* Alert Notifications Styles */
+  .alert-notifications {
+    font-family: 'Arial', sans-serif;
+    padding: 20px;
+    background-color: #fff; /* Using white as the primary background */
+    border-radius: 10px; /* Unified border radius */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Consistent shadow */
+    max-width: 800px; /* Limit the maximum width */
+    margin: 20px auto; /* Center the container on the page */
+    text-align: left; /* Ensures all text is aligned to the left */
+}
+
+
+  .alert-notifications h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+  }
+
+  .alert-notifications ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .alert-notifications {
+    font-family: 'Arial', sans-serif;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.alert-notifications h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.alert-notifications table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left; /* Ensures all text is aligned to the left */
+}
+
+.alert-notifications th, 
+.alert-notifications td {
+    padding: 10px;
+    border: 1px solid #ddd; /* Light border for better structure */
+}
+
+.alert-notifications th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.alert-notifications tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* Alternating row colors */
+}
+
+.no-alerts-message {
+    text-align: center;
+    font-style: italic;
+    color: #666;
+}
+
+
+  .alert-notifications ul li strong {
+    color: #333;
+  }
+
+  .no-alerts-message {
+    text-align: center;
+    color: #777;
+    font-size: 16px;
+    margin-top: 20px;
+  }
+  /* Style for the alert notifications container */
+
+/* Style for the alert list */
+.alert-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Style for each alert item */
+.alert-item {
+    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Style for alert info */
+.alert-info {
+    flex: 1;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* Style for alert details */
+.alert-details {
+    flex: 2;
+    font-size: 14px;
+    color: #555;
+}
+
+/* Style for alert animal */
+.alert-animal {
+    flex: 1;
+    font-size: 14px;
+    color: #555;
+    text-align: right;
+}
+
+/* Style for the no alerts message */
+.no-alerts-message {
+    font-size: 16px;
+    color: #888;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Responsive Design: Ensure the layout is responsive on smaller screens */
+@media (max-width: 600px) {
+    .alert-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .alert-info, .alert-details, .alert-animal {
+        margin-bottom: 10px;
+    }
+
+    .alert-animal {
+        text-align: left;
+    }
+}
+.delete-btn {
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+  background-color: #ff1a1f;
+}
+
+/* Down Arrow Styles */
+.down-arrow {
+  position: absolute;
+  bottom: 100px; /* Adjusted from 20px to 50px */
+  font-size: 30px;
+  color: #333;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.down-arrow:hover {
+  transform: translateY(5px);
+}
+
+
+
+</style>
+<div id="animal-data" style="display:none;">{{ animal_list|safe }}</div>
+<script src="{% static 'js/animals.js' %}"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+<div class="alerts-page">
+  <!-- Alerts Visualization Section -->
+  <div class="alerts-container">
+    <div class="alerts-outer-circle"></div>
+    <div class="alerts-inner-circle"></div>
+    <div class="alerts-base-station">
+      <strong>Base</strong>
+    </div>
+    <div class="down-arrow" id="scrollDownArrow">
+      &#x2193; <!-- Down arrow symbol -->
+    </div>
+  </div>
+
+  <!-- Notifications Section -->
+  <div class="alert-notifications" id="alertsSection">
+    <h2>Alert Notifications</h2>
+    {% if alerts %}
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Distance</th>
+                    <th>Time</th>
+                    <th>Animal</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alert in alerts %}
+                    <tr id="alert-{{ alert.id }}">
+                        <td></td>
+                        <td>500 meters</td>
+                        <td>{{ alert.datetime }}</td>
+                        <td>{{ alert.animal_name }}</td>
+                        <td>
+                            <button class="delete-btn" data-toggle="modal" data-target="#deleteModal" 
+                                data-id="{{ alert.id }}">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="no-alerts-message">No new alerts.</p>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this alert?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</div>
+<script>
+    let alertToDelete = null; // To store the ID of the alert to delete
+
+    // Show the modal and store the alert ID
+    document.addEventListener('click', function (event) {
+        if (event.target.matches('.delete-btn')) {
+            alertToDelete = event.target.getAttribute('data-id');
+        }
+    });
+
+    // Confirm delete action
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        if (!alertToDelete) return;
+
+        // Remove the row visually
+        const row = document.getElementById(`alert-${alertToDelete}`);
+        if (row) {
+            row.remove();
+        }
+
+        // Send the delete request to the server
+        fetch(`/delete-alert/${alertToDelete}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}', // Include CSRF token for security
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        })
+            .then(response => {
+                if (response.ok) {
+                    {% comment %} alert("Alert deleted successfully."); {% endcomment %}
+                    window.location.reload();
+                } else {
+                    alert("Failed to delete the alert.");
+                }
+            })
+            .catch(error => {
+                console.error("Error deleting alert:", error);
+            });
+
+        // Hide the modal
+        $('#deleteModal').modal('hide');
+
+        // Clear the alert ID
+        alertToDelete = null;
+    });
+</script>
+
+
+{% comment %} <script>
+  // Predefined colors for animals
+  const animalColors = {
+    Tiger: "rgb(146 26 0)",
+    Elephant: "#8E44AD",
+    Deer: "#28B463",
+    Lion: "#F4D03F",
+    Bear: "#34495E"
+  };
+
+  // Dynamic animals coming from Django context
+ // Dynamic animals coming from Django context
+const databaseAnimals = {{ animal_list|safe }};  // Assuming this is passed as a JSON object
+
+// Dynamically assign angles
+
+
+console.log(databaseAnimals); // Verify the assigned angles in the browser console
+
+  // Predefined animals (default to white region)
+  const predefinedAnimals = [
+    { msg: "Tiger", radius: 13, angle: 0, color: animalColors["Tiger"] },
+    { msg: "Elephant", radius: 13, angle: 80, color: animalColors["Elephant"] },
+    { msg: "Lion", radius: 13, angle: 180, color: animalColors["Lion"] }
+  ];
+
+  // Calculate position based on radius and angle
+  function calculatePosition(radius, angle) {
+    const radians = (angle * Math.PI) / 180; // Convert angle to radians
+    const x = 50 + radius * Math.cos(radians); // X position as percentage
+    const y = 50 + radius * Math.sin(radians); // Y position as percentage
+    return { x, y };
+  }
+
+  // Render animal markers dynamically
+  function renderAnimals() {
+    const container = document.querySelector(".alerts-container");
+
+    // Render database animals (outer circle with larger radius)
+    databaseAnimals.forEach((animal, index) => {
+      let existingAnimal = document.querySelector(`.alerts-animal[data-name="${animal.name}"]`);
+
+      // Define a radius for the outer circle (database animals)
+      const outerRadius = 28;  // Set an appropriate radius for outer circle placement
+
+      if (existingAnimal) {
+        // Update existing animal in the outer circle (database region)
+        existingAnimal.classList.add("alerts-alerted-animal");
+        const position = calculatePosition(outerRadius, animal.angle);
+        
+        existingAnimal.style.top = position.x + "%";
+        existingAnimal.style.left = position.y + "%";
+        existingAnimal.style.backgroundColor = animalColors[animal.name] || "gray";
+      } else {
+        // Create a new animal for the outer circle (database region)
+        const position = calculatePosition(outerRadius, animal.angle);
+        const animalDiv = document.createElement("div");
+        animalDiv.className = `alerts-animal alerts-alerted-animal`;
+        animalDiv.setAttribute("data-name", animal.name);
+        animalDiv.style.top = position.y + "%";
+        animalDiv.style.left = position.x + "%";
+        animalDiv.style.backgroundColor = animalColors[animal.name] || "gray"; 
+        animalDiv.textContent = animal.name;
+        container.appendChild(animalDiv);
+      }
+
+      // Update the angle for the next position (to spread out evenly around the circle)
+        // Evenly distribute them around the outer circle
+    });
+
+    // Render predefined animals (inner circle)
+    predefinedAnimals.forEach(animal => {
+      if (!databaseAnimals.some(dbAnimal => dbAnimal.name === animal.msg)) {
+        let existingAnimal = document.querySelector(`.alerts-animal[data-name="${animal.msg}"]`);
+
+        if (existingAnimal) {
+          existingAnimal.classList.remove("alerts-alerted-animal");
+          const position = calculatePosition(animal.radius, animal.angle);
+          
+          existingAnimal.style.top  = position.y + "%";
+          existingAnimal.style.left = position.x + "%";
+          existingAnimal.style.backgroundColor = animal.color;
+        } else {
+          const position = calculatePosition(animal.radius, animal.angle);
+          const animalDiv = document.createElement("div");
+          animalDiv.className = `alerts-animal`;
+          animalDiv.setAttribute("data-name", animal.msg);
+          animalDiv.style.top = position.y + "%";
+          animalDiv.style.left = position.x + "%";
+          animalDiv.style.backgroundColor = animal.color;
+          animalDiv.textContent = animal.msg;
+          container.appendChild(animalDiv);
+        }
+      }
+    });
+  }
+
+  // Update angles for circular movement
+  function updateAngles() {
+    databaseAnimals.forEach(animal => {
+      
+      animal.angle = (animal.angle +1) % 360; // Outer circle movement
+    });
+    predefinedAnimals.forEach(animal => {
+      animal.angle = (animal.angle - 1) % 360; // Inner circle movement
+    });
+  }
+
+  // Animate animals around the circle
+  function animateAnimals() {
+    updateAngles();
+    renderAnimals();
+  }
+
+  // Initialize rendering and animation
+  document.addEventListener("DOMContentLoaded", () => {
+    renderAnimals();
+    setInterval(animateAnimals, 100); // Animate every 100ms
+  });
+</script> {% endcomment %}
+
+
+
+
+<div id="animal-data" style="display:none;">{{ animal_list|safe }}</div>
+<script src="{% static 'js/animals.js' %}"></script>
+<script>
+  document.getElementById("scrollDownArrow").addEventListener("click", function () {
+    document.getElementById("alertsSection").scrollIntoView({ behavior: "smooth" });
+  });
+</script>
+
+{% endblock %}
