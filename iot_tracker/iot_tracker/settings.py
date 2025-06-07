@@ -37,7 +37,7 @@ SECRET_KEY = "django-insecure--n$@i)nq%_fpusd_9hmflu__$98uyg+=srmuukrgr#t-!-dj91
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.114','192.168.97.248','*']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.114','192.168.97.248','*','wildtrack-1.onrender.com']
 
 
 
@@ -112,6 +112,12 @@ DATABASES = {
         'PORT': '33725',
     }
 }
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://wildtrack-1.onrender.com',
+]
+
 
 
 # Password validation
