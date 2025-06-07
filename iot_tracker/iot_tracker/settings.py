@@ -160,7 +160,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'kmnaveen777@gmail.com' 
-EMAIL_HOST_PASSWORD = 'mpgj aqef mxiy zmsq'  
+EMAIL_HOST_PASSWORD = 'fymg uwii getj srkj'  
 
 
 # Static files (CSS, JavaScript, Images)
