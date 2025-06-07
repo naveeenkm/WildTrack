@@ -1,1 +1,1 @@
-web: cd iot_tracker && gunicorn iot_tracker.wsgi --log-file -
+web: gunicorn iot_tracker.wsgi:application
